@@ -44,50 +44,231 @@ class HabitPulseApp extends StatelessWidget {
   }
 }
 
-class AuthGate extends StatefulWidget {
+// Manages login state using real-time auth stream
+class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
   @override
-  State<AuthGate> createState() => _AuthGateState();
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(color: Colors.indigoAccent),
+            ),
+          );
+        }
+        if (snapshot.hasData && snapshot.data != null) {
+          return DashboardScreen(user: snapshot.data!);
+        }
+        return const LoginScreen();
+      },
+    );
+  }
 }
 
-class _AuthGateState extends State<AuthGate> {
-  User? _user;
-  bool _loading = true;
+// User Login & Registration Screen
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  void initState() {
-    super.initState();
-    _initAuth();
-  }
+  State<LoginScreen> createState() => _LoginScreenState();
+}
 
-  Future<void> _initAuth() async {
-    final auth = FirebaseAuth.instance;
-    User? currentUser = auth.currentUser;
-    currentUser ??= (await auth.signInAnonymously()).user;
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isSignUp = false;
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  Future<void> _submit() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _errorMessage = "Please fill in all fields.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setState(() => _errorMessage = "Password must be at least 6 characters.");
+      return;
+    }
 
     setState(() {
-      _user = currentUser;
-      _loading = false;
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      if (_isSignUp) {
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      } else {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorMessage = e.message ?? "Authentication failed.";
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = "An unexpected error occurred.";
+      });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(color: Colors.indigoAccent),
+    return Scaffold(
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(28.0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Icon(
+                  Icons.bolt_rounded,
+                  size: 68,
+                  color: Colors.indigoAccent,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _isSignUp ? 'Create HabitPulse Account' : 'Welcome Back',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _isSignUp
+                      ? 'Sign up to sync your habits across every device.'
+                      : 'Sign in to access your habits and streak history.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white60, fontSize: 13),
+                ),
+                const SizedBox(height: 32),
+                if (_errorMessage != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: Colors.redAccent.withOpacity(0.4),
+                      ),
+                    ),
+                    child: Text(
+                      _errorMessage!,
+                      style: const TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 13,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigoAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          _isSignUp ? 'Sign Up' : 'Log In',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _isSignUp = !_isSignUp;
+                      _errorMessage = null;
+                    });
+                  },
+                  child: Text(
+                    _isSignUp
+                        ? 'Already have an account? Log In'
+                        : "Don't have an account? Sign Up",
+                    style: const TextStyle(color: Colors.indigoAccent),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      );
-    }
-    return DashboardScreen(userId: _user!.uid);
+      ),
+    );
   }
 }
 
+// Primary Cloud Dashboard
 class DashboardScreen extends StatefulWidget {
-  final String userId;
-  const DashboardScreen({super.key, required this.userId});
+  final User user;
+  const DashboardScreen({super.key, required this.user});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -96,12 +277,14 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   String get _todayString {
     final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${dayFormat(now.day)}';
   }
+
+  String dayFormat(int d) => d.toString().padLeft(2, '0');
 
   CollectionReference get _habitRef => FirebaseFirestore.instance
       .collection('users')
-      .doc(widget.userId)
+      .doc(widget.user.uid)
       .collection('habits');
 
   Future<String> _fetchDailyQuote() async {
@@ -235,6 +418,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userIdentifier = widget.user.email ?? widget.user.uid.substring(0, 8);
+
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddDialog,
@@ -290,21 +475,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           ),
                           Text(
-                            'UID: ${widget.userId.substring(0, 10)}...',
+                            userIdentifier,
                             style: const TextStyle(
                               color: Colors.white54,
-                              fontSize: 12,
+                              fontSize: 13,
                             ),
                           ),
                         ],
                       ),
-                      const CircleAvatar(
-                        backgroundColor: Colors.indigo,
-                        child: Icon(
-                          Icons.cloud_done,
-                          color: Colors.white,
-                          size: 20,
+                      IconButton(
+                        tooltip: 'Sign Out',
+                        icon: const Icon(
+                          Icons.logout_rounded,
+                          color: Colors.white70,
                         ),
+                        onPressed: () => FirebaseAuth.instance.signOut(),
                       ),
                     ],
                   ),
@@ -500,7 +685,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: List.generate(daysInMonth, (index) {
               final day = index + 1;
               final dateStr =
-                  '${now.year}-${now.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
+                  '${now.year}-${now.month.toString().padLeft(2, '0')}-${dayFormat(day)}';
 
               int done = 0;
               for (var h in habits) {
