@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "476623319023",
+    "project_id": "habitpulse-e9890",
+    "storage_bucket": "habitpulse-e9890.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:476623319023:android:d05527b339f74a93d0d01a",
+        "android_client_info": {
+          "package_name": "com.example.habit_tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVg-JbV_bE3txk-SKRXqExxTQHarghgmk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
