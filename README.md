@@ -1,17 +1,83 @@
-# habit_tracker
+# HabitPulse 
 
-A new Flutter project.
+A high-performance, real-time habit tracking web application built with Flutter Web and powered by Firebase. Designed to help users establish consistency, track daily streaks, visualize progress with GitHub-style contribution heatmaps, and maintain dedicated focus sprints.
 
-## Getting Started
+**Live Demo:** [https://git-esh-taklikar.github.io/Habit_Tracker/](https://git-esh-taklikar.github.io/Habit_Tracker/)
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## Project Overview
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+HabitPulse solves the problem of scattered daily routines by giving users a persistent, distraction-free environment to manage their personal goals. The application connects directly to a cloud database, allowing users to authenticate from any device, synchronize daily logs instantly, and evaluate long-term consistency through visual activity grids.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## Technical Stack & Architecture
+
+* **Framework:** Flutter Web (Dart)
+* **Backend as a Service:** Firebase Authentication & Cloud Firestore
+* **Hosting & CI/CD:** GitHub Pages & Git Version Control
+* **State Management:** Reactive UI via Streams and Futures
+
+---
+
+## Key Rubric Implementations
+
+| Requirement | Implementation Detail |
+| :--- | :--- |
+| **Dart Fundamentals** | Custom typed data models (`Habit`), strongly typed enums (`HabitPriority`), named constructors, and serialization maps (`toMap` / `fromMap`). |
+| **Stateless Widgets** | Lightweight presentation components including `HabitItemCard`, `HeatmapCell`, and `MetricBadge` for optimized frame rendering. |
+| **Stateful Widgets** | Managed screen lifecycles in `DashboardScreen`, `HabitDetailScreen`, and `LoginScreen` for state mutation, text editing, and UI updates. |
+| **Futures (`FutureBuilder`)** | Asynchronous operations handling network simulation for dynamic daily motivation quotes and cloud authentication transactions. |
+| **Streams (`StreamBuilder`)** | Real-time listeners consuming Firestore snapshot changes for cross-device sync alongside interval timers (`Stream.periodic`) powering the Pomodoro sprint engine. |
+| **Navigation** | Material routing stack using `Navigator.push` for deep detail views and `Navigator.pop` for clean context tear-downs. |
+
+---
+
+## Core Features
+
+* **Cloud Sync Across Devices:** Firebase Authentication pairs user accounts with dedicated Firestore document paths, enabling updates on one device to reflect everywhere in real time.
+* **GitHub-Style Contribution Heatmap:** Visualizes monthly frequency and habit execution volume via an aggregated color-coded activity grid.
+* **Per-Habit Activity Matrices:** Deep-dive into individual tasks to see specific dates completed during the current month.
+* **Integrated Pomodoro Focus Engine:** A dedicated 5-minute interval timer implemented using Dart streams to encourage immediate execution of tracked goals.
+* **Clean State Initialization:** Starts empty on first sign-up with no dummy or mock records.
+
+---
+
+## Local Development Setup
+
+### Prerequisites
+* Flutter SDK (Version 3.47+ recommended)
+* Google Chrome or any modern browser
+* Git
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/Git-esh-Taklikar/Habit_Tracker.git](https://github.com/Git-esh-Taklikar/Habit_Tracker.git)
+   cd Habit_Tracker
+2. **Install dependencies:**
+   ```bash
+   flutter pub get
+3. **Run Locally:**
+   ```bash
+   flutter run -d chrome
+## Web Build & Deployment
+
+1. **Compile production bundle with repo prefix:**
+   ```bash
+   flutter build web --release --base-href "/Habit_Tracker/"
+2. **IDeploy bundle to the gh-pages branch:**
+   ```bash
+   cd build/web
+   git add .
+   git commit -m "Deploy production release"
+   git push origin gh-pages
+   cd ../..
+
+3. **Commit source code to main**
+   ```bash
+   git add .
+   git commit -m "Update project codebase"
+   git push origin main
