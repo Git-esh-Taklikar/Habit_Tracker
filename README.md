@@ -21,18 +21,6 @@ HabitPulse solves the problem of scattered daily routines by giving users a pers
 
 ---
 
-## Key Rubric Implementations
-
-| Requirement | Implementation Detail |
-| :--- | :--- |
-| **Dart Fundamentals** | Custom typed data models (`Habit`), strongly typed enums (`HabitPriority`), named constructors, and serialization maps (`toMap` / `fromMap`). |
-| **Stateless Widgets** | Lightweight presentation components including `HabitItemCard`, `HeatmapCell`, and `MetricBadge` for optimized frame rendering. |
-| **Stateful Widgets** | Managed screen lifecycles in `DashboardScreen`, `HabitDetailScreen`, and `LoginScreen` for state mutation, text editing, and UI updates. |
-| **Futures (`FutureBuilder`)** | Asynchronous operations handling network simulation for dynamic daily motivation quotes and cloud authentication transactions. |
-| **Streams (`StreamBuilder`)** | Real-time listeners consuming Firestore snapshot changes for cross-device sync alongside interval timers (`Stream.periodic`) powering the Pomodoro sprint engine. |
-| **Navigation** | Material routing stack using `Navigator.push` for deep detail views and `Navigator.pop` for clean context tear-downs. |
-
----
 
 ## Core Features
 
