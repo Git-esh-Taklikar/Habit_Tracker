@@ -68,7 +68,7 @@ HabitPulse solves the problem of scattered daily routines by giving users a pers
 1. **Compile production bundle with repo prefix:**
    ```bash
    flutter build web --release --base-href "/Habit_Tracker/"
-2. **IDeploy bundle to the gh-pages branch:**
+2. **Deploy bundle to the gh-pages branch:**
    ```bash
    cd build/web
    git add .
