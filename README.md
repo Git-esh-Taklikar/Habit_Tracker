@@ -69,3 +69,48 @@ HabitPulse solves the problem of scattered daily routines by giving users a pers
    git add .
    git commit -m "Update project codebase"
    git push origin main
+
+
+
+## Understanding How it works
+
+## System Architecture & How It Works
+
+HabitPulse is a cross-platform habit tracking application built with Flutter, designed to synchronize state in real time across Web and Android clients via Firebase.
+
+---
+
+### 1. Authentication Flow & Session Management
+
+* **Firebase Authentication:** Handles user identity via Email/Password authentication.
+* **Persistent Sessions:** User auth state is monitored via `FirebaseAuth.instance.authStateChanges()`. Upon initial login, Firebase securely persists authentication tokens locally (IndexedDB on Web, EncryptedSharedPreferences on Android).
+* **Seamless App Launches:** The application root listens to this auth stream. If a valid session token exists, the user bypasses the login screen and lands directly on the Cloud Dashboard; if unauthenticated, the app displays the login/registration view.
+* **Secure Logout:** Triggering the logout action invalidates the local session tokens and resets the stream to direct back to the authentication screen.
+
+---
+
+### 2. Database Design & Real-Time Sync (Cloud Firestore)
+
+* **User Data Isolation:** Every authenticated user is assigned a unique UID. All user data is partitioned under an isolated Firestore collection path:
+  ```text
+  users/{userId}/habits/{habitId}
+* **Real-Time Data Streams:** Dashboard views utilize Firestore `snapshots()` streams. When a habit is added, edited, or marked complete on one device, Firestore pushes updates over WebSockets/gRPC to all active clients within milliseconds.
+* **Offline Caching:** Changes made while disconnected are queued locally and automatically synced when network connectivity is re-established.
+
+---
+
+### 3. Activity Map & Heatmap Computation
+
+* **Daily Completion Tracking:** Each habit completion is logged with a timestamp formatted as `YYYY-MM-DD`.
+* **Dynamic Grid Rendering:** The top activity map aggregates daily habit completion counts across the current month. The intensity/color of each block scales dynamically depending on consistency and total completed tasks for that specific day.
+
+---
+
+### 4. CI/CD & Android Release Pipeline (GitHub Actions)
+
+* **Automated Cloud Builds:** Releases are managed via `.github/workflows/build_apk.yml` running on Ubuntu runners (`ubuntu-latest`).
+* **Toolchain Alignment:** Configured with Java 17, Flutter stable, Kotlin Gradle Plugin 2.1.0, and Android Gradle Plugin 8.7.0 to guarantee reproducible, dependency-validated builds.
+* **Direct Binary Distribution:** On pushing to the `main` branch (or releasing version tags), GitHub Actions compiles `assembleRelease`, generates `app-release.apk`, and publishes a GitHub Release asset with an automated direct download endpoint.
+
+
+[Demo Vid.zip](https://github.com/user-attachments/files/32006577/Demo.Vid.zip)
